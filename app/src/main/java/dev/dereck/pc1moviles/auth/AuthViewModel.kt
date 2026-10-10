@@ -6,11 +6,11 @@ import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-class AuthViewModel : ViewModel() {
+class AuthViewModel(
+    private val authManager: FirebaseAuthManager = FirebaseAuthManager
+) : ViewModel() {
 
-    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
-
-    private val _user = MutableStateFlow<FirebaseUser?>(auth.currentUser)
+    private val _user = MutableStateFlow<FirebaseUser?>(authManager.currentUser)
     val user: StateFlow<FirebaseUser?> = _user
 
     private val _isLoading = MutableStateFlow(false)
@@ -24,11 +24,11 @@ class AuthViewModel : ViewModel() {
     }
 
     init {
-        auth.addAuthStateListener(listener)
+        authManager.addAuthStateListener(listener)
     }
 
     override fun onCleared() {
-        auth.removeAuthStateListener(listener)
+        authManager.removeAuthStateListener(listener)
     }
 
     fun clearError() {
@@ -39,7 +39,7 @@ class AuthViewModel : ViewModel() {
         if (!validarCredenciales(email, password)) return
         _isLoading.value = true
         _error.value = null
-        auth.signInWithEmailAndPassword(email.trim(), password)
+        authManager.signIn(email.trim(), password)
             .addOnSuccessListener {
                 _user.value = it.user
                 _isLoading.value = false
@@ -55,7 +55,7 @@ class AuthViewModel : ViewModel() {
         if (!validarCredenciales(email, password)) return
         _isLoading.value = true
         _error.value = null
-        auth.createUserWithEmailAndPassword(email.trim(), password)
+        authManager.signUp(email.trim(), password)
             .addOnSuccessListener {
                 _user.value = it.user
                 _isLoading.value = false
@@ -68,7 +68,7 @@ class AuthViewModel : ViewModel() {
     }
 
     fun logout() {
-        auth.signOut()
+        authManager.signOut()
         _user.value = null
     }
 
