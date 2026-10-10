@@ -66,14 +66,8 @@ fun AppNav(authViewModel: AuthViewModel = viewModel()) {
         }
         composable(Routes.SEGUIMIENTO) {
             val current = user
-            SeguimientoScreen(
-                email = current?.email ?: "(sin sesión)",
-                onVolver = { navController.popBackStack() },
-                onLogout = {
-                    authViewModel.logout()
-                    navController.navigate(Routes.LOGIN) { popUpTo(0) { inclusive = true } }
-                }
-            )
+            val segVm: dev.dereck.pc1moviles.seguimiento.SeguimientoViewModel = viewModel()
+            if (current != null) SeguimientoScreen(current.email ?: "", current.uid, segVm, { navController.popBackStack() }, { authViewModel.logout(); navController.navigate(Routes.LOGIN){ popUpTo(0){inclusive=true} } })
         }
     }
 }

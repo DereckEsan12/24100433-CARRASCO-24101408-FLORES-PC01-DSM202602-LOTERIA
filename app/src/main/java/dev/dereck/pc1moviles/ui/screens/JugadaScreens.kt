@@ -156,23 +156,26 @@ fun JugadaScreen(
 }
 
 @Composable
-fun SeguimientoScreen(
-    email: String,
-    onVolver: () -> Unit,
-    onLogout: () -> Unit
-) {
-    Column(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
+fun SeguimientoScreen(email: String, uid: String, viewModel: dev.dereck.pc1moviles.seguimiento.SeguimientoViewModel, onVolver: () -> Unit, onLogout: () -> Unit) {
+    val bolillas by viewModel.bolillas.collectAsState()
+    val jugada by viewModel.jugada.collectAsState()
+    LaunchedEffect(uid) { viewModel.escuchar(uid) }
+    val aciertos = jugada.intersect(bolillas.map { it.numero }.toSet()).size
+    val resultado = when {
+        bolillas.size < 6 -> "Sorteo en curso ${bolillas.size}/6 - Aciertos: $aciertos"
+        aciertos == 6 -> "GANADOR"
+        else -> "SIGUE INTENTANDO"
+    }
+    Column(Modifier.fillMaxSize().padding(24.dp), Arrangement.Center, Alignment.CenterHorizontally) {
         Text("Seguimiento del sorteo", style = MaterialTheme.typography.headlineSmall)
-        Spacer(Modifier.height(8.dp))
         Text("Sesión: $email")
-        Spacer(Modifier.height(8.dp))
-        Text("Pantalla de seguimiento en tiempo real: se implementa en la siguiente parte (bolillas, aciertos y resultado).")
+        Spacer(Modifier.height(12.dp))
+        Text("Bolillas: ${if (bolillas.isEmpty()) "Esperando..." else bolillas.map { it.numero }.joinToString(" - ")}")
+        Text("Tu jugada: ${if (jugada.isEmpty()) "—" else jugada.joinToString(", ")}")
+        Text("Aciertos: $aciertos")
+        Text(resultado, style = MaterialTheme.typography.headlineMedium)
         Spacer(Modifier.height(16.dp))
-        Button(onClick = onVolver, modifier = Modifier.fillMaxWidth()) { Text("Volver al registro de jugada") }
+        Button(onClick = onVolver, modifier = Modifier.fillMaxWidth()) { Text("Volver") }
         TextButton(onClick = onLogout) { Text("Cerrar sesión") }
     }
 }
